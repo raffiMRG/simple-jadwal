@@ -1,0 +1,47 @@
+services:
+  db:
+    image: mysql:8
+    container_name: mysql_scrap
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: { MYSQL_ROOT_PASSWORD }
+      MYSQL_DATABASE: { MYSQL_DATABASE }
+    ports:
+      - "3308:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./scrapJadwal
+      dockerfile: Dockerfile
+    container_name: golang_scrap
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./scrapJadwal/.env
+    ports:
+      - "82:82" # backend diexpose ke host
+    working_dir: /app
+    command: ["go", "run", "main.go"]
+
+  frontend:
+    image: php:8.2-apache
+    container_name: php_scrap
+    restart: always
+    ports:
+      - "8081:80"
+    volumes:
+      - ./scrapFrontend:/var/www/html
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
