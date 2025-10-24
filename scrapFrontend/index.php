@@ -1,5 +1,5 @@
 <?php
-$apiUrl = "http://localhost/yourapi";
+$apiUrl = "https://jadwalit.raffimrg.my.id/api/jadwal-kuliah";
 
 $params = [];
 if (!empty($_GET['nama_dosen'])) $params['nama_dosen'] = $_GET['nama_dosen'];

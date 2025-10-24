@@ -4,8 +4,10 @@ services:
     container_name: mysql_scrap
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: { MYSQL_ROOT_PASSWORD }
-      MYSQL_DATABASE: { MYSQL_DATABASE }
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3308:3306"
     volumes:
@@ -15,33 +17,59 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - scrap-network
 
   backend:
-    build:
-      context: ./scrapJadwal
-      dockerfile: Dockerfile
-    container_name: golang_scrap
+    image: golang:1.24-alpine
+    container_name: scrap_backend
     restart: always
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - ./scrapJadwal/.env
-    ports:
-      - "82:82" # backend diexpose ke host
     working_dir: /app
-    command: ["go", "run", "main.go"]
-
-  frontend:
-    image: php:8.2-apache
-    container_name: php_scrap
-    restart: always
+    volumes:
+      - ./scrapJadwal:/app
+    env_file:
+      - .env
+    command: sh -c "
+      echo '🚀 Building Go app...' &&
+      go mod tidy &&
+      go build -o main main.go &&
+      echo '✅ Build success! Starting server...' &&
+      ./main"
     ports:
-      - "8081:80"
+      - "82:82"
+    networks:
+      - scrap-network
+
+# ==========
+  frontend:
+    image: php:8.2-fpm
+    container_name: jadwal_frontend
+    working_dir: /var/www/html
     volumes:
       - ./scrapFrontend:/var/www/html
+    networks:
+      - scrap-network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_scrap_frontend
+    ports:
+      - "83:80"
+    volumes:
+      - ./scrapFrontend:/var/www/html
+      - ./scrapFrontend/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - backend
+      - frontend
+    networks:
+      - scrap-network
+
 
 volumes:
   db_data:
+    driver: local
+
+networks:
+  scrap-network:
