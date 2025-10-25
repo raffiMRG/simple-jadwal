@@ -18,11 +18,11 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - scrap-network
+      - tunnel2
 
   backend:
     image: golang:1.24-alpine
-    container_name: scrap_backend
+    container_name: scrapbackend
     restart: always
     depends_on:
       db:
@@ -41,21 +41,21 @@ services:
     ports:
       - "82:82"
     networks:
-      - scrap-network
+      - tunnel2
 
 # ==========
   frontend:
     image: php:8.2-fpm
-    container_name: jadwal_frontend
+    container_name: jadwalfrontend
     working_dir: /var/www/html
     volumes:
       - ./scrapFrontend:/var/www/html
     networks:
-      - scrap-network
+      - tunnel2
 
   nginx:
     image: nginx:latest
-    container_name: nginx_scrap_frontend
+    container_name: nginxscrapfrontend
     ports:
       - "83:80"
     volumes:
@@ -64,7 +64,7 @@ services:
     depends_on:
       - frontend
     networks:
-      - scrap-network
+      - tunnel2
 
 
 volumes:
@@ -72,4 +72,4 @@ volumes:
     driver: local
 
 networks:
-  scrap-network:
+  tunnel2:
