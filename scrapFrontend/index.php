@@ -1,5 +1,5 @@
 <?php
-$apiUrl = "https://jadwalit.raffimrg.my.id/api/jadwal-kuliah";
+$apiUrl = "https://scrapbackend.raffimrg.my.id/api/jadwal-kuliah";
 
 $params = [];
 if (!empty($_GET['nama_dosen'])) $params['nama_dosen'] = $_GET['nama_dosen'];
@@ -33,7 +33,7 @@ $data = json_decode($response, true);
 
 <body>
   <header class="header">
-    <h1>📚 Jadwal Kuliah UNPAM</h1>
+    <h1>📚 Jadwal Kuliah TI</h1>
     <button id="theme-toggle" class="theme-toggle">🌙 Mode Gelap</button>
   </header>
 
@@ -123,7 +123,7 @@ $data = json_decode($response, true);
   </div>
   <footer class="footer">
     <p>
-      © <?= date("Y") ?> <strong>ME & GPT - Jadwal Kuliah UNPAM </strong>Built because there was no filter / Search 🔎 in the original web.
+      © <?= date("Y") ?> <strong>ME & GPT - Jadwal Kuliah TI </strong>Built because there was no filter / Search 🔎 in the original web.
     </p>
     <p class="footer-links">
       <a href="about.php">Tentang</a> |
