@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"scrapJadwal/Models"
 	"scrapJadwal/Repositories"
+	"scrapJadwal/helpers"
 )
 
 type JadwalController struct {
@@ -29,38 +32,6 @@ func (c *JadwalController) SfrapJadwal() {
 		Repositories.ScrapeSemester(c.baseurl, semester, c.Token, c.DB)
 	}
 }
-
-// func (c *JadwalController) GetJadwalKuliah(ctx *gin.Context) {
-// 	var jadwal []Models.JadwalKuliah
-
-// 	// Ambil parameter filter dari query string
-// 	namaDosen := ctx.Query("nama_dosen")
-// 	namaMK := ctx.Query("nama_mata_kuliah")
-// 	ruang := ctx.Query("id_ruang")
-// 	semester := ctx.Query("semester")
-// 	hari := ctx.Query("nama_hari")
-
-// 	q := c.DB.Model(&Models.JadwalKuliah{})
-
-// 	if namaDosen != "" {
-// 		q = q.Where("nama_dosen LIKE ?", "%"+namaDosen+"%")
-// 	}
-// 	if namaMK != "" {
-// 		q = q.Where("nama_mata_kuliah LIKE ?", "%"+namaMK+"%")
-// 	}
-// 	if ruang != "" {
-// 		q = q.Where("id_ruang LIKE ?", "%"+ruang+"%")
-// 	}
-// 	if semester != "" {
-// 		q = q.Where("semester = ?", semester)
-// 	}
-// 	if hari != "" {
-// 		q = q.Where("nama_hari = ?", hari)
-// 	}
-
-// 	q.Order("nama_hari, ket_jam").Find(&jadwal)
-// 	ctx.JSON(http.StatusOK, jadwal)
-// }
 
 func (c *JadwalController) GetJadwalKuliah(ctx *gin.Context) {
 	var jadwal []Models.JadwalKuliah
@@ -107,4 +78,71 @@ func (c *JadwalController) GetJadwalKuliah(ctx *gin.Context) {
 		"pages": int(math.Ceil(float64(total) / float64(limit))),
 		"data":  jadwal,
 	})
+}
+
+// ================= AUTH =========================
+func (c *JadwalController) Register(ctx *gin.Context) {
+	var body struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+		Role     string `json:"role"`
+	}
+
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	role := strings.ToLower(body.Role)
+	if role == "" {
+		role = "user"
+	}
+
+	if role == "admin" && os.Getenv("ALLOW_ADMIN_CREATION") != "1" {
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "admin creation disabled"})
+		return
+	}
+
+	hash, _ := helpers.HashPassword(body.Password)
+
+	user := Models.User{
+		Username:     body.Username,
+		PasswordHash: hash,
+		Role:         role,
+	}
+
+	if err := c.DB.Create(&user).Error; err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "username mungkin sudah digunakan"})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{"message": "user dibuat", "user": gin.H{"id": user.ID, "username": user.Username, "role": user.Role}})
+}
+
+func (c *JadwalController) Login(ctx *gin.Context) {
+	var body struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user Models.User
+	if err := c.DB.Where("username = ?", body.Username).First(&user).Error; err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "username atau password salah"})
+		return
+	}
+
+	if err := helpers.CheckPassword(user.PasswordHash, body.Password); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "username atau password salah"})
+		return
+	}
+
+	token, _ := helpers.CreateToken(user.ID, user.Username, user.Role)
+
+	// ctx.JSON(http.StatusOK, gin.H{"access_token": token, "token_type": "bearer", "expires_in": 86400})
+	ctx.JSON(http.StatusOK, gin.H{"access_token": token, "username": user.Username, "role": user.Role})
 }
