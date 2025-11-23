@@ -9,8 +9,7 @@ if (!isset($_SESSION['jwt']) || !isset($_SESSION['username']) || !isset($_SESSIO
 
 $token = $_SESSION['jwt'];
 
-// $apiUrl = "https://scrapbackend.raffimrg.my.id/api/jadwal-kuliah";
-$apiUrl = "http://localhost:82/api/jadwal-kuliah";
+$apiUrl = "https://scrapbackend.raffimrg.my.id/api/jadwal-kuliah";
 
 $params = [];
 if (!empty($_GET['nama_dosen'])) $params['nama_dosen'] = $_GET['nama_dosen'];
@@ -61,10 +60,6 @@ if (isset($data['error'])) {
 </head>
 
 <body>
-  <!-- <header class="header">
-    <h1>📚 Jadwal Kuliah TI</h1>
-    <button id="theme-toggle" class="theme-toggle">🌙 Mode Gelap</button>
-  </header> -->
   <?php require_once 'navbar.php' ?>
 
   <div class="card">
