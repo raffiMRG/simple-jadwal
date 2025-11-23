@@ -1,4 +1,14 @@
 <?php
+
+session_start();
+if (!isset($_SESSION['jwt']) || !isset($_SESSION['username']) || !isset($_SESSION['role'])) {
+  // exit("Harus login terlebih dahulu.");
+  header("Location: login.php");
+  die();
+}
+
+$token = $_SESSION['jwt'];
+
 $apiUrl = "https://scrapbackend.raffimrg.my.id/api/jadwal-kuliah";
 
 $params = [];
@@ -18,24 +28,39 @@ if (!empty($params)) {
   $apiUrl .= '?' . http_build_query($params);
 }
 
-$response = @file_get_contents($apiUrl);
-$data = json_decode($response, true);
+// $response = @file_get_contents($apiUrl);
+// $data = json_decode($response, true);
+
+$ch = curl_init($apiUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  "Authorization: Bearer $token",
+  "Accept: application/json"
+]);
+
+$result = curl_exec($ch);
+// curl_close($ch);
+unset($ch);
+
+$data = json_decode($result, true);
+
+if (isset($data['error'])) {
+  echo "Akses ditolak: " . $data['error'];
+}
+// var_dump($_SESSION)
 ?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
   <meta charset="UTF-8">
-  <title>Jadwal Kuliah UNPAM</title>
+  <title>Jadwal TI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <header class="header">
-    <h1>📚 Jadwal Kuliah TI</h1>
-    <button id="theme-toggle" class="theme-toggle">🌙 Mode Gelap</button>
-  </header>
+  <?php require_once 'navbar.php' ?>
 
   <div class="card">
     <form method="get" class="filter-form">
@@ -123,7 +148,7 @@ $data = json_decode($response, true);
   </div>
   <footer class="footer">
     <p>
-      © <?= date("Y") ?> <strong>ME & GPT - Jadwal Kuliah TI </strong>Built because there was no filter / Search 🔎 in the original web.
+      © <?= date("Y") ?> <strong>ME & GPT - Jadwal TI </strong>Built because there was no filter / Search 🔎 in the original web.
     </p>
     <p class="footer-links">
       <a href="about.php">Tentang</a> |

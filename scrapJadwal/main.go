@@ -6,6 +6,7 @@ import (
 	"os"
 	"scrapJadwal/Config"
 	"scrapJadwal/Controlers"
+	"scrapJadwal/Middleware"
 	"scrapJadwal/Models"
 	"time"
 
@@ -51,11 +52,12 @@ func main() {
 
 	// migrasi
 	db := Config.DB
-	db.AutoMigrate(Models.JadwalKuliah{})
+	db.AutoMigrate(&Models.JadwalKuliah{}, &Models.User{})
 
 	// dependency injection ke controller
 	// jadwalController := Controllers.NewJadwalController(db)
-	jadwalController := Controlers.NewJadwalController(db, baseurl, token)
+	Controller := Controlers.NewJadwalController(db, baseurl, token)
+	Middleware := Middleware.NewMiddleware(db)
 
 	r := gin.Default()
 
@@ -72,11 +74,23 @@ func main() {
 
 	r.Static("/static", "./static")
 	// r.GET("/api/jadwal-kuliah", jadwalController.SfrapJadwal)
-	r.GET("/api/jadwal-kuliah", jadwalController.GetJadwalKuliah)
+	// r.GET("/api/jadwal-kuliah", Controller.GetJadwalKuliah)	<-- dimasukin ke protected route
 	// r.LoadHTMLGlob("templates/*")
 	// r.GET("/", func(c *gin.Context) {
 	// 	c.HTML(http.StatusOK, "index.html", nil)
 	// })
+
+	r.POST("/register", Controller.Register)
+	r.POST("/login", Controller.Login)
+
+	api := r.Group("/api", Middleware.Auth())
+	{
+		api.GET("/jadwal-kuliah", Controller.GetJadwalKuliah)
+
+		// api.GET("/profile", Controller.Profile)
+		// api.GET("/admin", middleware.AdminOnly(), controller.AdminOnlyPage)
+
+	}
 
 	r.Run(":" + port)
 
