@@ -9,7 +9,8 @@ if (!isset($_SESSION['jwt']) || !isset($_SESSION['username']) || !isset($_SESSIO
 
 $token = $_SESSION['jwt'];
 
-$apiUrl = "https://scrapbackend.raffimrg.my.id/api/jadwal-kuliah";
+// $apiUrl = "https://scrapbackend.raffimrg.my.id/api/jadwal-kuliah";
+$apiUrl = "http://localhost:82/api/jadwal-kuliah";
 
 $params = [];
 if (!empty($_GET['nama_dosen'])) $params['nama_dosen'] = $_GET['nama_dosen'];

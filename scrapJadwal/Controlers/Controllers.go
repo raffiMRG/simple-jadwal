@@ -146,3 +146,66 @@ func (c *JadwalController) Login(ctx *gin.Context) {
 	// ctx.JSON(http.StatusOK, gin.H{"access_token": token, "token_type": "bearer", "expires_in": 86400})
 	ctx.JSON(http.StatusOK, gin.H{"access_token": token, "username": user.Username, "role": user.Role})
 }
+
+func (c *JadwalController) GetUsers(ctx *gin.Context) {
+	db := c.DB
+
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
+	var users []Models.User
+	var total int64
+
+	db.Model(&Models.User{}).Count(&total)
+	db.Offset(offset).Limit(limit).Order("id DESC").Find(&users)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"page":        page,
+		"limit":       limit,
+		"total":       total,
+		"total_pages": int(math.Ceil(float64(total) / float64(limit))),
+		"data":        users,
+	})
+}
+
+func (c *JadwalController) UpdateUserRole(ctx *gin.Context) {
+	db := c.DB
+	id := ctx.Param("id")
+
+	var input struct {
+		Role string `json:"role" binding:"required"`
+	}
+	if err := ctx.ShouldBindJSON(&input); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "role is required"})
+		return
+	}
+
+	var user Models.User
+	if err := db.First(&user, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	user.Role = input.Role
+	db.Save(&user)
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "role updated successfully", "user": user})
+}
+
+func (c *JadwalController) DeleteUser(ctx *gin.Context) {
+	db := c.DB
+	id := ctx.Param("id")
+
+	var user Models.User
+	if err := db.First(&user, id).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	db.Delete(&user)
+	ctx.JSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
+}
