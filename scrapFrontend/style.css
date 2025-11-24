@@ -1,4 +1,8 @@
-
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 :root {
   --primary: #2563eb;
   --bg-light: #f9fafb;
@@ -10,10 +14,10 @@
   --radius: 12px;
 }
 
-    body {
-        background-color: var(--bg-light);
-  color: var(--text-light);
-  font-family: 'Inter', sans-serif;
+  body {
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
       margin: 0;
       display: flex;
       flex-direction: column;

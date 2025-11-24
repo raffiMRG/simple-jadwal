@@ -90,6 +90,10 @@ func main() {
 		// api.GET("/profile", Controller.Profile)
 		// api.GET("/admin", middleware.AdminOnly(), controller.AdminOnlyPage)
 
+		api.GET("/users", Controller.GetUsers)
+		api.PUT("/users/:id/role", Controller.UpdateUserRole)
+		api.DELETE("/users/:id", Controller.DeleteUser)
+
 	}
 
 	r.Run(":" + port)
