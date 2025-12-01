@@ -1,8 +1,9 @@
 <?php
 session_start();
 require_once 'helper/auth_admin.php';
+require_once 'config/config.php';
+
 $token = $_SESSION['jwt'];
-$API_URL = "http://localhost:82";
 $id = $_GET["id"];
 $apiUrl = "$API_URL/api/users/$id";
 
