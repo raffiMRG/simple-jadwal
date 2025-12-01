@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - tunnel2
+      - tunnel4
 
   backend:
     image: golang:1.24-alpine
@@ -41,7 +41,7 @@ services:
     ports:
       - "82:82"
     networks:
-      - tunnel2
+      - tunnel4
 
 # ==========
   frontend:
@@ -51,7 +51,7 @@ services:
     volumes:
       - ./scrapFrontend:/var/www/html
     networks:
-      - tunnel2
+      - tunnel4
 
   nginx:
     image: nginx:latest
@@ -64,12 +64,24 @@ services:
     depends_on:
       - frontend
     networks:
-      - tunnel2
+      - tunnel4
 
+# -------------------------------
+  # Cloudflare Tunnel (Zero Trust)
+  # -------------------------------
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - openproject
+    networks:
+      - tunnel4
 
 volumes:
   db_data:
     driver: local
 
 networks:
-  tunnel2:
+  tunnel4:
