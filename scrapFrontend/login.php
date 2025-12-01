@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'config/config.php';
 
 // var_dump($_SESSION);
 
@@ -21,8 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     "password" => $_POST['password']
   ];
 
-  // $ch = curl_init("https//scrapbackend.raffimrg.my.id/login");
-  $ch = curl_init("http://localhost:82/login");
+  $ch = curl_init("$API_URL/login");
 
   curl_setopt($ch, CURLOPT_POST, true);
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));

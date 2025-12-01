@@ -4,6 +4,17 @@
   </header> -->
 
   <style>
+    :root {
+      --primary: #2563eb;
+      --bg-light: #f9fafb;
+      --bg-dark: #111827;
+      --text-light: #1f2937;
+      --text-dark: #f3f4f6;
+      --table-border: #e5e7eb;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
+    }
+
     /* Navbar container */
     .navbar {
       display: flex;
@@ -74,6 +85,7 @@
     .profile-name {
       font-size: 15px;
       font-weight: 500;
+      color: var(--text-dark);
     }
 
     /* Hamburger (mobile only) */
@@ -119,9 +131,18 @@
       background: #e0e7ff;
     }
 
-    h1 {
+    /* h1 {
       color: var(--primary);
       margin: 20px 0;
+      text-align: center;
+    } */
+
+
+    /* Header H1 agar kontras di kedua mode */
+    h1 {
+      color: var(--text-dark);
+      font-weight: 700;
+      font-size: 1.8rem;
       text-align: center;
     }
 
@@ -153,6 +174,10 @@
       /* hide menu on mobile when not expanded */
       .navbar-right {
         display: none;
+      }
+
+      h1 {
+        font-size: 1.5rem;
       }
     }
 

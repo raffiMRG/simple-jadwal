@@ -1,4 +1,6 @@
 <?php
+require_once 'config/config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if ($_POST["password"] !== $_POST["password2"]) {
     $showPasswordModal = true; // trigger modal
@@ -9,8 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       "role"     => "user"
     ];
 
-    // $ch = curl_init("https//scrapbackend.raffimrg.my.id/register");
-    $ch = curl_init("http://localhost:82/register");
+    $ch = curl_init("$API_URL/register");
 
     curl_setopt_array($ch, [
       CURLOPT_POST => true,
