@@ -2,6 +2,7 @@ package Controlers
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"os"
@@ -17,20 +18,35 @@ import (
 )
 
 type JadwalController struct {
-	DB      *gorm.DB
-	Token   string
+	DB *gorm.DB
+	// Token   string
 	baseurl string
 }
 
-func NewJadwalController(db *gorm.DB, baseurl, token string) *JadwalController {
-	return &JadwalController{baseurl: baseurl, DB: db, Token: token}
+func NewJadwalController(db *gorm.DB, baseurl string) *JadwalController {
+	return &JadwalController{baseurl: baseurl, DB: db}
 }
 
-func (c *JadwalController) SfrapJadwal() {
+func (c *JadwalController) SfrapJadwal(ctx *gin.Context) {
+	reqData := Models.ReqScrap{}
+	if err := ctx.ShouldBindJSON(&reqData); err != nil {
+		log.Println("Error : ", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "invalid request body",
+		})
+	}
 	for i := 1; i <= 8; i++ {
 		semester := fmt.Sprintf("%02d", i)
-		Repositories.ScrapeSemester(c.baseurl, semester, c.Token, c.DB)
+		if err := Repositories.ScrapeSemester(c.baseurl, semester, reqData.Token, c.DB); err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+			break
+		}
 	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "scraping completed",
+	})
 }
 
 func (c *JadwalController) GetJadwalKuliah(ctx *gin.Context) {

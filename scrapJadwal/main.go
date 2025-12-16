@@ -8,6 +8,7 @@ import (
 	"scrapJadwal/Controlers"
 	"scrapJadwal/Middleware"
 	"scrapJadwal/Models"
+	"scrapJadwal/Repositories"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -30,20 +31,20 @@ func main() {
 	}
 
 	// load config from env
-	token := os.Getenv("BEARER_TOKEN")
-	if token == "" {
-		log.Fatal("BEARER_TOKEN env required")
-	}
+	// token := os.Getenv("BEARER_TOKEN")
+	// if token == "" {
+	// 	log.Fatal("BEARER_TOKEN env required")
+	// }
 
 	// load config from env
 	baseurl := os.Getenv("SRC_URL")
-	if token == "" {
+	if baseurl == "" {
 		log.Fatal("SRC_URL env required")
 	}
 
 	// load config from env
 	port := os.Getenv("PORT")
-	if token == "" {
+	if port == "" {
 		log.Fatal("PORT env required")
 	}
 
@@ -52,12 +53,14 @@ func main() {
 
 	// migrasi
 	db := Config.DB
-	db.AutoMigrate(&Models.JadwalKuliah{}, &Models.User{})
+	db.AutoMigrate(&Models.JadwalKuliah{}, &Models.User{}, &Models.Jurusan{})
 
 	// dependency injection ke controller
 	// jadwalController := Controllers.NewJadwalController(db)
-	Controller := Controlers.NewJadwalController(db, baseurl, token)
+	Controller := Controlers.NewJadwalController(db, baseurl)
 	Middleware := Middleware.NewMiddleware(db)
+	jurusanRepo := Repositories.NewJurusanRepository(db)
+	jurusanController := Controlers.NewJurusanController(jurusanRepo)
 
 	r := gin.Default()
 
@@ -94,6 +97,8 @@ func main() {
 		api.PUT("/users/:id/role", Controller.UpdateUserRole)
 		api.DELETE("/users/:id", Controller.DeleteUser)
 
+		api.POST("/scraping", Controller.SfrapJadwal)
+		api.POST("/scrape-jurusan", jurusanController.ScrapeJurusan)
 	}
 
 	r.Run(":" + port)

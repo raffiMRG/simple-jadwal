@@ -21,3 +21,7 @@ type JadwalKuliah struct {
 	KetJam         string `json:"ket_jam"`
 	Semester       string `json:"semester"` // tambahan manual
 }
+
+type ReqScrap struct {
+	Token string `json:"token"`
+}
