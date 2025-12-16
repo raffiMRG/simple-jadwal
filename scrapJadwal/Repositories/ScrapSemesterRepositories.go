@@ -2,7 +2,6 @@ package Repositories
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	// "scrapJadwal/models"
@@ -11,15 +10,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func ScrapeSemester(baseurl, semester string, token string, db *gorm.DB) {
+func ScrapeSemester(baseurl, semester string, token string, db *gorm.DB) error {
 	fmt.Printf("Scraping semester %s...\n", semester)
 	page := 1
 
 	for {
 		data, err := helpers.FetchPage(baseurl, semester, page, token)
 		if err != nil {
-			log.Printf("Gagal ambil semester %s halaman %d: %v", semester, page, err)
-			break
+			// log.Printf("Gagal ambil semester %s halaman %d: %v", semester, page, err)
+			// break
+			return fmt.Errorf("gagal ambil semester %s halaman %d: %v", semester, page, err)
 		}
 
 		// Tambahkan info semester
@@ -39,4 +39,5 @@ func ScrapeSemester(baseurl, semester string, token string, db *gorm.DB) {
 		page++
 		time.Sleep(1 * time.Second) // delay biar gak dianggap spam
 	}
+	return nil
 }

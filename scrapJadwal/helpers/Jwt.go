@@ -19,7 +19,7 @@ func CreateToken(id uint, username, role string) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		secret = "very-secret-change-me"
+		secret = "nyari-apa-lu-kuda"
 	}
 	return t.SignedString([]byte(secret))
 }
@@ -29,7 +29,7 @@ func ParseToken(tokenString string) (jwt.MapClaims, error) {
 
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		secret = "very-secret-change-me"
+		secret = "nyari-apa-lu-kuda"
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims,
